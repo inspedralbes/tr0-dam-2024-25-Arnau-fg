@@ -1,6 +1,6 @@
 <script setup>
 import { ref, reactive, onMounted, watch, computed } from 'vue'
-import { getQuestions, getQuestionById, getAnswers, editQuestion } from './communicationManager'
+import { getQuestions, getQuestions2, getQuestionById, getAnswers, editQuestion } from './communicationManager'
 
 const preguntes = ref([]);
 const preguntaAEditar = ref(null);
