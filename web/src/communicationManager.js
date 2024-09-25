@@ -28,3 +28,16 @@ export const getAnswers = async () => {
     console.log(data);
     return data;
 }
+
+// Edit pregunta by id
+export const editQuestion = async (id, question) => {
+    const response = await fetch(`${link}/preguntes/${id}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(question)
+    })
+    const data = await response.json()
+    return data;
+}

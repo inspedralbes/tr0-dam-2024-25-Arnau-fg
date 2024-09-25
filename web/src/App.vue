@@ -1,6 +1,6 @@
 <script setup>
 import { ref, reactive, onMounted, watch, computed } from 'vue'
-import { getQuestions, getQuestionById, getAnswers } from './communicationManager'
+import { getQuestions, getQuestionById, getAnswers, editQuestion } from './communicationManager'
 
 const preguntes = ref([]);
 const preguntaAEditar = ref(null);
@@ -33,12 +33,14 @@ const modalBorrar = (id) => {
     console.log("no borrem pregunta ", id);
   }
 }
-
-const respostesFiltrades = computed(() => {
-  return respostes.value.filter((resposta) => {
-    return 
+const savePregunta = () => {
+  preguntaAEditar.value.respostes.forEach((modificar) => {
+    modificar.imatge = respostes.value.find((correcta) => correcta.resposta === modificar.resposta).imatge;
   })
-})
+
+  console.log(preguntaAEditar.value);
+  editQuestion(preguntaAEditar.value.id, preguntaAEditar.value);
+}
 
 watch(correctAnswer, (newValue) => {
   preguntaAEditar.value.respostes.forEach((resposta) => {
@@ -80,12 +82,10 @@ onMounted(async () => {
           <button @click="modalBorrar(pregunta.id)">Eliminar</button>
         </div>
       </div>
-
     </div>
   </div>
   <div v-else-if="page == 'editar'">
     <h1>Editar</h1>
-
     <div v-if="preguntaAEditar">
       <input type="text" v-model="preguntaAEditar.pregunta">
       <div v-for="resposta in preguntaAEditar.respostes" :key="resposta.id">
@@ -97,7 +97,7 @@ onMounted(async () => {
         </select>
         <input type="radio" :value="resposta.id" :name="preguntaAEditar.id" v-model="correctAnswer">
       </div>
-      <button>Guardar</button>
+      <button @click="savePregunta()">Guardar</button>
     </div>
   </div>
   <div v-else-if="page == 'afegir'">
