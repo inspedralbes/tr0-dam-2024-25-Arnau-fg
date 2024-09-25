@@ -1,29 +1,18 @@
 <script setup>
-import { ref, reactive, onMounted, watch } from 'vue'
+import { ref, reactive, onMounted, watch, computed } from 'vue'
+import { getQuestions, getQuestionById, getAnswers } from './communicationManager'
 
 const preguntes = ref([]);
 const preguntaAEditar = ref(null);
 const page = ref('preguntes');
 const interactor = ref(null);
 const correctAnswer = ref(null);
+const respostes = ref([]);
 
 
-const getQuestions = async () => {
-  const response = await fetch('http://localhost:3000/preguntes')
-  const data = await response.json()
-  return data;
-}
 
-const getQuestionById = async (id) => {
-  const response = await fetch(`http://localhost:3000/preguntes/${id}`)
-  const data = await response.json()
 
-  if (data.foundQuestion) {
-    return data.question;
-  } else {
-    return null;
-  }
-}
+
 
 const changePage = (newPage) => {
   page.value = newPage;
@@ -32,7 +21,8 @@ const changePage = (newPage) => {
 const goToEdit = async (id) => {
   interactor.value = id;
   preguntaAEditar.value = await getQuestionById(id);
-  page.value = 'editar'
+  respostes.value = await getAnswers();
+  page.value = 'editar';
   console.log("editant pregunta ", id);
 }
 
@@ -43,6 +33,12 @@ const modalBorrar = (id) => {
     console.log("no borrem pregunta ", id);
   }
 }
+
+const respostesFiltrades = computed(() => {
+  return respostes.value.filter((resposta) => {
+    return 
+  })
+})
 
 watch(correctAnswer, (newValue) => {
   preguntaAEditar.value.respostes.forEach((resposta) => {
@@ -61,26 +57,26 @@ onMounted(async () => {
 <template>
   <button @click="changePage('afegir')">Afegir</button>
   <button @click="changePage('preguntes')">Mostrar preguntes</button>
-  <div class="container--preguntes" v-if="page == 'preguntes'">
+  <div class="container__preguntes" v-if="page == 'preguntes'">
     <h1>Preguntes</h1>
-    <div v-for="pregunta in preguntes" :key="pregunta.id" class="preguntes--pregunta">
-      <div class="pregunta--id">
+    <div v-for="pregunta in preguntes" :key="pregunta.id" class="preguntes__pregunta">
+      <div class="pregunta__id">
         {{ pregunta.id }}
       </div>
-      <div class="pregunta--text">
+      <div class="pregunta__text">
         {{ pregunta.pregunta }}
       </div>
-      <div class="pregunta--respostes">
-        <div v-for="respAct in pregunta.respostes" :key="respAct.id" class="respostes--resposta"
-          :class="respAct.correcta ? 'respostes--resposta__correcte' : 'respostes--resposta__incorrecte'">
+      <div class="pregunta__respostes">
+        <div v-for="respAct in pregunta.respostes" :key="respAct.id" class="respostes__resposta"
+          :class="respAct.correcta ? 'respostes__resposta__correcte' : 'respostes__resposta__incorrecte'">
           {{ respAct.resposta }}
         </div>
       </div>
-      <div class="pregunta--opcions">
-        <div class="opcions--editar">
+      <div class="pregunta__opcions">
+        <div class="opcions__editar">
           <button @click="goToEdit(pregunta.id)">Editar</button>
         </div>
-        <div class="opcions--eliminar">
+        <div class="opcions__eliminar">
           <button @click="modalBorrar(pregunta.id)">Eliminar</button>
         </div>
       </div>
@@ -93,7 +89,12 @@ onMounted(async () => {
     <div v-if="preguntaAEditar">
       <input type="text" v-model="preguntaAEditar.pregunta">
       <div v-for="resposta in preguntaAEditar.respostes" :key="resposta.id">
-        <input type="text" v-model="resposta.resposta">
+        <select v-model="resposta.resposta">
+          <option :value="resposta.resposta">{{ resposta.resposta }}</option>
+          <option v-for="opcio in respostes.filter(opcio => opcio.resposta != resposta.resposta)" :key="opcio.id" :value="opcio.resposta">
+              {{ opcio.resposta }}
+          </option>
+        </select>
         <input type="radio" :value="resposta.id" :name="preguntaAEditar.id" v-model="correctAnswer">
       </div>
       <button>Guardar</button>
@@ -110,7 +111,7 @@ onMounted(async () => {
   padding: 0;
 }
 
-.container--preguntes {
+.container__preguntes {
   display: grid;
   grid-template-columns: 1fr;
   width: 70%;
@@ -118,7 +119,7 @@ onMounted(async () => {
   margin-right: auto;
 }
 
-.preguntes--pregunta {
+.preguntes__pregunta {
   display: grid;
   grid-template-columns: 1fr 5fr 1fr 1fr;
   border: 1px solid black;
@@ -126,32 +127,32 @@ onMounted(async () => {
   margin: 10px;
 }
 
-.pregunta--id {
+.pregunta__id {
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-.pregunta--text {
+.pregunta__text {
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-.respostes--resposta {
+.respostes__resposta {
   display: flex;
   justify-content: center;
 }
 
-.respostes--resposta__correcte {
+.respostes__resposta__correcte {
   background-color: #cee3be;
 }
 
-.respostes--resposta__incorrecte {
+.respostes__resposta__incorrecte {
   background-color: #f79c9b;
 }
 
-.pregunta--opcions {
+.pregunta__opcions {
   display: flex;
   justify-content: space-around;
   flex-direction: column;

@@ -1,0 +1,52 @@
+{
+    "respostes": [
+        {
+            "id": 0,
+            "resposta": "BMW"
+        },
+        {
+            "id": 1,
+            "resposta": "Audi"
+        },
+        {
+            "id": 2,
+            "resposta": "Ferrari"
+        },
+        {
+            "id": 3,
+            "resposta": "Ford"
+        },
+        {
+            "id": 4,
+            "resposta": "Lamborghini"
+        },
+        {
+            "id": 5,
+            "resposta": "Lexus"
+        },
+        {
+            "id": 6,
+            "resposta": "Mazda"
+        },
+        {
+            "id": 7,
+            "resposta": "Mercedes"
+        },
+        {
+            "id": 8,
+            "resposta": "Renault"
+        },
+        {
+            "id": 9,
+            "resposta": "Subaru"
+        },
+        {
+            "id": 10,
+            "resposta": "Tesla"
+        },
+        {
+            "id": 11,
+            "resposta": "Volkswagen"
+        }
+    ]
+}

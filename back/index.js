@@ -2,6 +2,7 @@ const express = require('express');
 // const textFile = require("./JSON/preguntes.json");
 // const file = JSON.parse(textFile);
 const file = require("./JSON/preguntes.json");
+const respostesFile = require("./JSON/respostes.json");
 const fs = require('fs');
 const path = require('path');
 const cors = require('cors');
@@ -155,6 +156,11 @@ app.get('/preguntes/:id', (req, res) => {
 // Read All
 app.get('/preguntes', (req, res) => {
    res.send(file.preguntes)
+});
+
+// Read All Answers
+app.get('/respostes', (req, res) => {
+   res.send(respostesFile.respostes)
 });
 
 // Update

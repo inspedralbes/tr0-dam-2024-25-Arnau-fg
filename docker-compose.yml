@@ -1,0 +1,25 @@
+services:
+
+  tr0-web:
+    image: node:21-alpine3.18
+    container_name: tr0-web
+    volumes:
+      - ./web:/usr/src/app
+    working_dir: /usr/src/app
+    command: sh -c "npm install && cp .env.DEV .env && npm run dev"
+    ports:
+      - "5173:5173"
+  
+  tr0-node:
+    build: 
+      dockerfile: ./develop.DockerFile
+      context: ./back
+    container_name: tr0-node
+    volumes:
+      - ./back:/usr/src/app
+    working_dir: /usr/src/app
+    command: sh -c "npm install && cp .env.DEV .env && node index.js"
+    ports:
+      - "3000:3000"
+  
+  
