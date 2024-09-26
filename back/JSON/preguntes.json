@@ -69,8 +69,7 @@
                     "resposta": "Ford",
                     "correcta": true,
                     "imatge": "https://exemple.com/ford.jpg"
-                }
-                ,
+                },
                 {
                     "id": 1,
                     "resposta": "Audi",
@@ -599,7 +598,6 @@
                     "correcta": false,
                     "imatge": "https://exemple.com/tesla.jpg"
                 }
-                
             ]
         }
     ]

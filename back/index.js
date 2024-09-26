@@ -1,7 +1,7 @@
 const express = require('express');
 // const textFile = require("./JSON/preguntes.json");
 // const file = JSON.parse(textFile);
-const file = require("./JSON/preguntes.json");
+let file = require("./JSON/preguntes.json");
 const respostesFile = require("./JSON/respostes.json");
 const fs = require('fs');
 const path = require('path');
@@ -111,7 +111,6 @@ app.post('/finalitza', (req, res) => {
 
 // Create
 app.post('/preguntes', (req, res) => {
-   console.log(req.body);
 
    let newQuestion = {
       id: file.preguntes[file.preguntes.length - 1].id + 1,
@@ -121,9 +120,12 @@ app.post('/preguntes', (req, res) => {
 
    file.preguntes.push(newQuestion);
 
-   fs.writeFileSync('./JSON/preguntes.json', file);
+   fs.writeFileSync('./JSON/preguntes.json', JSON.stringify(file));
 
-   res.send(req.body)
+   res.send({
+      created: true,
+      error: null
+   });
 });
 
 // Read
@@ -186,7 +188,7 @@ app.put('/preguntes/:id', (req, res) => {
       }
    }
 
-   fs.writeFileSync('./JSON/preguntes.json', file);
+   fs.writeFileSync('./JSON/preguntes.json', JSON.stringify(file));
 
    res.send(response);
 });
@@ -213,7 +215,7 @@ app.delete('/preguntes/:id', (req, res) => {
       }
    }
 
-   fs.writeFileSync('./JSON/preguntes.json', file);
+   fs.writeFileSync('./JSON/preguntes.json', JSON.stringify(file));
 
    res.send(response);
 });

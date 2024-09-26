@@ -2,6 +2,20 @@ const link = import.meta.env.VITE_FETCH_ROUTE;
 
 // CRUD
 
+// Create pregunta
+
+export const createQuestion = async (question) => {
+    const response = await fetch(`${link}/preguntes`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(question)
+    })
+    const data = await response.json()
+    return data;
+}
+
 // Get all preguntes
 export const getQuestions = async () => {
     const response = await fetch(`${link}/preguntes`)
@@ -37,6 +51,17 @@ export const editQuestion = async (id, question) => {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify(question)
+    })
+    const data = await response.json()
+    return data;
+}
+
+export const deleteQuestion = async (id) => {
+    const response = await fetch(`${link}/preguntes/${id}`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json'
+        }
     })
     const data = await response.json()
     return data;

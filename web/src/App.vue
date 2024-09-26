@@ -1,49 +1,111 @@
 <script setup>
 import { ref, reactive, onMounted, watch, computed } from 'vue'
-import { getQuestions, getQuestions2, getQuestionById, getAnswers, editQuestion } from './communicationManager'
+import { createQuestion, getQuestions, getQuestionById, getAnswers, editQuestion, deleteQuestion } from './communicationManager'
 
 const preguntes = ref([]);
 const preguntaAEditar = ref(null);
 const page = ref('preguntes');
 const interactor = ref(null);
-const correctAnswer = ref(null);
+const correctAnswerEditar = ref(null);
+const correctAnswerCrear = ref(null);
 const respostes = ref([]);
+const preguntaACrear = reactive({
+  pregunta: '',
+  respostes: [
+    { id: 0, resposta: '', correcta: false },
+    { id: 1, resposta: '', correcta: false },
+    { id: 2, resposta: '', correcta: false },
+    { id: 3, resposta: '', correcta: false }
+  ]  
+})
 
 
 
 
 
-
-const changePage = (newPage) => {
+const changePage = async (newPage) => {
   page.value = newPage;
+}
+const goToPreguntes = async () => {
+  preguntes.value = await getQuestions();
+
+  goToPreguntes();
 }
 
 const goToEdit = async (id) => {
   interactor.value = id;
   preguntaAEditar.value = await getQuestionById(id);
   respostes.value = await getAnswers();
-  page.value = 'editar';
+  changePage("editar")
   console.log("editant pregunta ", id);
+}
+
+const goToCreate = async () => {
+  respostes.value = await getAnswers();
+  changePage("afegir")
 }
 
 const modalBorrar = (id) => {
   if (confirm(`Segur que vols borrar la pregunta ${id}?`)) {
-    console.log("borrant pregunta ", id);
+    deletePregunta(id);
   } else {
     console.log("no borrem pregunta ", id);
   }
 }
-const savePregunta = () => {
+const savePregunta = async () => {
   preguntaAEditar.value.respostes.forEach((modificar) => {
     modificar.imatge = respostes.value.find((correcta) => correcta.resposta === modificar.resposta).imatge;
   })
 
   console.log(preguntaAEditar.value);
-  editQuestion(preguntaAEditar.value.id, preguntaAEditar.value);
+  let response = await editQuestion(preguntaAEditar.value.id, preguntaAEditar.value);
+
+  if (response.updated) {
+    console.log("Pregunta actualitzada correctament");
+  } else {
+    console.log("Error al actualitzar la pregunta");
+  }
+
+  goToPreguntes();
 }
 
-watch(correctAnswer, (newValue) => {
+const crearPregunta = async () => {
+  preguntaACrear.respostes.forEach((modificar) => {
+    modificar.imatge = respostes.value.find((correcta) => correcta.resposta === modificar.resposta).imatge;
+  })
+
+  console.log(preguntaACrear);
+  let response = await createQuestion(preguntaACrear);
+
+  if (response.created) {
+    console.log("Pregunta creada correctament");
+  } else {
+    console.log("Error al crear la pregunta");
+  }
+
+  goToPreguntes();
+}
+
+const deletePregunta = async (id) => {
+  let response = await deleteQuestion(id);
+
+  if (response.deleted) {
+    console.log("Pregunta eliminada correctament");
+  } else {
+    console.log("Error al eliminar la pregunta");
+  }
+
+  goToPreguntes();
+}
+
+watch(correctAnswerEditar, (newValue) => {
   preguntaAEditar.value.respostes.forEach((resposta) => {
+    resposta.correcta = resposta.id === newValue;
+  })
+})
+
+watch(correctAnswerCrear, (newValue) => {
+  preguntaACrear.respostes.forEach((resposta) => {
     resposta.correcta = resposta.id === newValue;
   })
 })
@@ -57,8 +119,8 @@ onMounted(async () => {
 </script>
 
 <template>
-  <button @click="changePage('afegir')">Afegir</button>
-  <button @click="changePage('preguntes')">Mostrar preguntes</button>
+  <button @click="goToCreate">Afegir</button>
+  <button @click="goToPreguntes()">Mostrar preguntes</button>
   <div class="container__preguntes" v-if="page == 'preguntes'">
     <h1>Preguntes</h1>
     <div v-for="pregunta in preguntes" :key="pregunta.id" class="preguntes__pregunta">
@@ -91,17 +153,31 @@ onMounted(async () => {
       <div v-for="resposta in preguntaAEditar.respostes" :key="resposta.id">
         <select v-model="resposta.resposta">
           <option :value="resposta.resposta">{{ resposta.resposta }}</option>
-          <option v-for="opcio in respostes.filter(opcio => opcio.resposta != resposta.resposta)" :key="opcio.id" :value="opcio.resposta">
-              {{ opcio.resposta }}
+          <option v-for="opcio in respostes.filter(opcio => opcio.resposta != resposta.resposta)" :key="opcio.id"
+            :value="opcio.resposta">
+            {{ opcio.resposta }}
           </option>
         </select>
-        <input type="radio" :value="resposta.id" :name="preguntaAEditar.id" v-model="correctAnswer">
+        <input type="radio" :value="resposta.id" :name="preguntaAEditar.id" v-model="correctAnswerEditar">
       </div>
       <button @click="savePregunta()">Guardar</button>
     </div>
   </div>
   <div v-else-if="page == 'afegir'">
-    <h1>Afegir</h1>
+    <h1>Crear</h1>
+    <input type="text" v-model="preguntaACrear.pregunta">
+    <div v-for="resposta in preguntaACrear.respostes" :key="resposta.id">
+      <select v-model="resposta.resposta">
+        <option disabled value="">Escull una resposta</option>
+        <option v-for="opcio in respostes" :key="opcio.id"
+          :value="opcio.resposta">
+          {{ opcio.resposta }}
+        </option>
+      </select>
+      <input type="radio" :value="resposta.id" :name="preguntaACrear.id" v-model="correctAnswerCrear">
+      
+    </div>
+    <button @click="crearPregunta()">Guardar</button>
   </div>
 </template>
 
