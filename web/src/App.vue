@@ -29,7 +29,7 @@ const changePage = async (newPage) => {
 const goToPreguntes = async () => {
   preguntes.value = await getQuestions();
 
-  goToPreguntes();
+  changePage("preguntes");
 }
 
 const goToEdit = async (id) => {
@@ -83,6 +83,8 @@ const crearPregunta = async () => {
     console.log("Error al crear la pregunta");
   }
 
+  resetCrear();
+
   goToPreguntes();
 }
 
@@ -96,6 +98,14 @@ const deletePregunta = async (id) => {
   }
 
   goToPreguntes();
+}
+
+const resetCrear = () => {
+  preguntaACrear.pregunta = '';
+  preguntaACrear.respostes.forEach((resposta) => {
+    resposta.resposta = '';
+    resposta.correcta = false;
+  })
 }
 
 watch(correctAnswerEditar, (newValue) => {
@@ -119,10 +129,44 @@ onMounted(async () => {
 </script>
 
 <template>
-  <button @click="goToCreate">Afegir</button>
-  <button @click="goToPreguntes()">Mostrar preguntes</button>
+  <div class="buttonContainer">
+    <button class="buttonContainer__button button button__create" @click="goToCreate">Afegir pregunta</button>
+    <button class="buttonContainer__button button button__preguntes" @click="goToPreguntes">Llistar preguntes</button>
+  </div>
+  
   <div class="container__preguntes" v-if="page == 'preguntes'">
-    <h1>Preguntes</h1>
+    <h1 class="title">Preguntes</h1>
+    <div class="preguntes__pregunta pregunta__explicacio">
+      <div class="pregunta__id">
+        Id
+      </div>
+      <div class="pregunta__text">
+        Pregunta
+      </div>
+      <div class="pregunta__respostes">
+        <div  class="respostes__resposta respostes__resposta__correcte ">
+          Correcta
+        </div>
+        <div  class="respostes__resposta  respostes__resposta__incorrecte">
+          Incorrecta
+        </div>
+        <div  class="respostes__resposta  respostes__resposta__incorrecte">
+          Incorrecta
+        </div>
+        <div  class="respostes__resposta  respostes__resposta__incorrecte">
+          Incorrecta
+        </div>
+      </div>
+  
+      <div class="pregunta__opcions">
+        <div class="opcions__editar">
+          <button class="button button__editar">Editar</button>
+        </div>
+        <div class="opcions__eliminar">
+          <button class="button">Eliminar</button>
+        </div>
+      </div>
+    </div>
     <div v-for="pregunta in preguntes" :key="pregunta.id" class="preguntes__pregunta">
       <div class="pregunta__id">
         {{ pregunta.id }}
@@ -138,19 +182,19 @@ onMounted(async () => {
       </div>
       <div class="pregunta__opcions">
         <div class="opcions__editar">
-          <button @click="goToEdit(pregunta.id)">Editar</button>
+          <button class="button button__editar" @click="goToEdit(pregunta.id)">Editar</button>
         </div>
         <div class="opcions__eliminar">
-          <button @click="modalBorrar(pregunta.id)">Eliminar</button>
+          <button class="button" @click="modalBorrar(pregunta.id)">Eliminar</button>
         </div>
       </div>
     </div>
   </div>
   <div v-else-if="page == 'editar'">
-    <h1>Editar</h1>
-    <div v-if="preguntaAEditar">
-      <input type="text" v-model="preguntaAEditar.pregunta">
-      <div v-for="resposta in preguntaAEditar.respostes" :key="resposta.id">
+    <h1 class="title">Editar</h1>
+    <div class="editar__container container" v-if="preguntaAEditar">
+      <textarea v-model="preguntaAEditar.pregunta" rows="4" cols="50"></textarea>
+      <div class="resposta__select" v-for="resposta in preguntaAEditar.respostes" :key="resposta.id">
         <select v-model="resposta.resposta">
           <option :value="resposta.resposta">{{ resposta.resposta }}</option>
           <option v-for="opcio in respostes.filter(opcio => opcio.resposta != resposta.resposta)" :key="opcio.id"
@@ -160,13 +204,16 @@ onMounted(async () => {
         </select>
         <input type="radio" :value="resposta.id" :name="preguntaAEditar.id" v-model="correctAnswerEditar">
       </div>
-      <button @click="savePregunta()">Guardar</button>
+      <div>
+        <button class="button" @click="savePregunta()">Guardar</button>
+      </div>
     </div>
   </div>
   <div v-else-if="page == 'afegir'">
-    <h1>Crear</h1>
-    <input type="text" v-model="preguntaACrear.pregunta">
-    <div v-for="resposta in preguntaACrear.respostes" :key="resposta.id">
+    <h1 class="title">Crear</h1>
+    <div class="crear__container container">
+      <textarea v-model="preguntaACrear.pregunta" rows="4" cols="50"></textarea>
+      <div class="resposta__select" v-for="resposta in preguntaACrear.respostes" :key="resposta.id">
       <select v-model="resposta.resposta">
         <option disabled value="">Escull una resposta</option>
         <option v-for="opcio in respostes" :key="opcio.id"
@@ -177,7 +224,13 @@ onMounted(async () => {
       <input type="radio" :value="resposta.id" :name="preguntaACrear.id" v-model="correctAnswerCrear">
       
     </div>
-    <button @click="crearPregunta()">Guardar</button>
+    <div>
+      <button class="button" @click="crearPregunta()">Guardar</button>
+    </div>
+    </div>
+    
+
+    
   </div>
 </template>
 
@@ -187,12 +240,54 @@ onMounted(async () => {
   padding: 0;
 }
 
+button {
+  all: unset;
+}
+
+.buttonContainer {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.button {
+  background-color: #ff8583;
+  color: black;
+  padding: 10px;
+  border-radius: 5px;
+  margin: 7px;
+  cursor: pointer;
+  font-size: 1.1em;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.button__create {
+  background-color: #bafd87;
+}
+.button__preguntes {
+  background-color: #79ffff;
+}
+
+.button__editar {
+  background-color: #fcf96d;
+}
+
 .container__preguntes {
   display: grid;
   grid-template-columns: 1fr;
   width: 70%;
   margin-left: auto;
   margin-right: auto;
+}
+
+.pregunta__explicacio {
+  background-color: beige;
 }
 
 .preguntes__pregunta {
@@ -207,17 +302,28 @@ onMounted(async () => {
   display: flex;
   justify-content: center;
   align-items: center;
+  font-size: 1.4em;
 }
 
 .pregunta__text {
   display: flex;
   justify-content: center;
   align-items: center;
+  font-size: 1.1em;
+}
+
+.pregunta__respostes {
+  display: flex;
+  justify-content: space-around;
+  flex-direction: column;
+  font-size: 1.1em;
 }
 
 .respostes__resposta {
   display: flex;
   justify-content: center;
+  align-items: center;
+  flex-grow: 1;
 }
 
 .respostes__resposta__correcte {
@@ -233,5 +339,31 @@ onMounted(async () => {
   justify-content: space-around;
   flex-direction: column;
   align-items: center;
+}
+
+.title{
+  text-align: center;
+  font-size: 2em;
+  margin: 20px;
+}
+
+textarea {
+  margin: 20px;
+  max-width: 30vw;
+}
+.resposta__select{
+  min-width: 350px;
+}
+.resposta__select select {
+  appearance: none;
+  width: 400px;
+  font-size: 1.15rem;
+  padding: 0.675em 6em 0.675em 1em;
+  background-color: #fff;
+  border: 1px solid #caced1;
+  border-radius: 0.25rem;
+  color: #000;
+  cursor: pointer;
+  margin: 20px;
 }
 </style>

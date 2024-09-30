@@ -56,6 +56,7 @@ export const editQuestion = async (id, question) => {
     return data;
 }
 
+// Delete pregunta by id
 export const deleteQuestion = async (id) => {
     const response = await fetch(`${link}/preguntes/${id}`, {
         method: 'DELETE',
