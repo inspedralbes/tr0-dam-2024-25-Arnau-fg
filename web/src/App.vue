@@ -37,7 +37,7 @@ const goToEdit = async (id) => {
   preguntaAEditar.value = await getQuestionById(id);
   respostes.value = await getAnswers();
   changePage("editar")
-  console.log("editant pregunta ", id);
+  // console.log("editant pregunta ", id);
 }
 
 const goToCreate = async () => {
@@ -48,23 +48,24 @@ const goToCreate = async () => {
 const modalBorrar = (id) => {
   if (confirm(`Segur que vols borrar la pregunta ${id}?`)) {
     deletePregunta(id);
-  } else {
-    console.log("no borrem pregunta ", id);
-  }
+  } 
+  // else {
+  //   console.log("no borrem pregunta ", id);
+  // }
 }
 const savePregunta = async () => {
   preguntaAEditar.value.respostes.forEach((modificar) => {
     modificar.imatge = respostes.value.find((correcta) => correcta.resposta === modificar.resposta).imatge;
   })
 
-  console.log(preguntaAEditar.value);
+  // console.log(preguntaAEditar.value);
   let response = await editQuestion(preguntaAEditar.value.id, preguntaAEditar.value);
 
-  if (response.updated) {
-    console.log("Pregunta actualitzada correctament");
-  } else {
-    console.log("Error al actualitzar la pregunta");
-  }
+  // if (response.updated) {
+  //   console.log("Pregunta actualitzada correctament");
+  // } else {
+  //   console.log("Error al actualitzar la pregunta");
+  // }
 
   goToPreguntes();
 }
@@ -74,14 +75,14 @@ const crearPregunta = async () => {
     modificar.imatge = respostes.value.find((correcta) => correcta.resposta === modificar.resposta).imatge;
   })
 
-  console.log(preguntaACrear);
+  // console.log(preguntaACrear);
   let response = await createQuestion(preguntaACrear);
 
-  if (response.created) {
-    console.log("Pregunta creada correctament");
-  } else {
-    console.log("Error al crear la pregunta");
-  }
+  // if (response.created) {
+  //   console.log("Pregunta creada correctament");
+  // } else {
+  //   console.log("Error al crear la pregunta");
+  // }
 
   resetCrear();
 
@@ -91,11 +92,11 @@ const crearPregunta = async () => {
 const deletePregunta = async (id) => {
   let response = await deleteQuestion(id);
 
-  if (response.deleted) {
-    console.log("Pregunta eliminada correctament");
-  } else {
-    console.log("Error al eliminar la pregunta");
-  }
+  // if (response.deleted) {
+  //   console.log("Pregunta eliminada correctament");
+  // } else {
+  //   console.log("Error al eliminar la pregunta");
+  // }
 
   goToPreguntes();
 }
@@ -123,7 +124,7 @@ watch(correctAnswerCrear, (newValue) => {
 onMounted(async () => {
   preguntes.value = await getQuestions();
 
-  console.log(preguntes.value)
+  // console.log(preguntes.value)
 })
 
 </script>
@@ -193,7 +194,7 @@ onMounted(async () => {
   <div v-else-if="page == 'editar'">
     <h1 class="title">Editar</h1>
     <div class="editar__container container" v-if="preguntaAEditar">
-      <textarea v-model="preguntaAEditar.pregunta" rows="4" cols="50"></textarea>
+      <textarea v-model="preguntaAEditar.pregunta" rows="4" cols="50" placeholder="Escriu aquí la pregunta"></textarea>
       <div class="resposta__select" v-for="resposta in preguntaAEditar.respostes" :key="resposta.id">
         <select v-model="resposta.resposta">
           <option :value="resposta.resposta">{{ resposta.resposta }}</option>
@@ -212,7 +213,7 @@ onMounted(async () => {
   <div v-else-if="page == 'afegir'">
     <h1 class="title">Crear</h1>
     <div class="crear__container container">
-      <textarea v-model="preguntaACrear.pregunta" rows="4" cols="50"></textarea>
+      <textarea v-model="preguntaACrear.pregunta" rows="4" cols="50" placeholder="Escriu aquí la pregunta"></textarea>
       <div class="resposta__select" v-for="resposta in preguntaACrear.respostes" :key="resposta.id">
       <select v-model="resposta.resposta">
         <option disabled value="">Escull una resposta</option>
@@ -350,6 +351,8 @@ button {
 textarea {
   margin: 20px;
   max-width: 30vw;
+  font-family: Arial, sans-serif;
+  font-size: 1.1em;
 }
 .resposta__select{
   min-width: 350px;

@@ -39,7 +39,7 @@ export const getQuestionById = async (id) => {
 export const getAnswers = async () => {
     const response = await fetch(`${link}/respostes`)
     const data = await response.json()
-    console.log(data);
+    // console.log(data);
     return data;
 }
 
