@@ -35,7 +35,7 @@ app.post('/', (req, res) => {
 
    playerStates[sessionToken] = slicedGameQuestions;
 
-   console.log(playerStates);
+   // console.log(playerStates);
 
    res.send({
       token: sessionToken,
@@ -72,13 +72,25 @@ app.post('/finalitza', (req, res) => {
    let encertades = 0;
    const totals = playerStates[sessionToken].length;
 
+   let estadistiques = [];
+
    playerAnswers.forEach((answer, index) => {
+      
+      let answered = {
+         id: playerStates[sessionToken][index].id,
+         acertat: false
+      }
+
       const respostaCorrecta = playerStates[sessionToken][index].respostes.find(resposta => {
          return resposta.correcta == true;
       });
+
       if (answer == respostaCorrecta.id) {
+         answered.acertat = true;
          encertades++;
       }
+
+      estadistiques.push(answered);
    });
 
    let playerScore = {
@@ -86,6 +98,7 @@ app.post('/finalitza', (req, res) => {
       totals
    }
 
+   
 
    if (!fs.existsSync("answers")) {
       fs.mkdirSync("answers");
@@ -95,11 +108,18 @@ app.post('/finalitza', (req, res) => {
       fs.mkdirSync(directoryPath);
    }
 
+   if (fs.existsSync(directoryPath+"/stats.json")) {
+      console.log("hola");
+      const stats = fs.readFileSync(directoryPath+"/stats.json");
+      const statsParsed = JSON.parse(stats);
+
+   }
+
    const filesInDirectory = fs.readdirSync(directoryPath);
-   const fileName = `${filesInDirectory.length + 1}.json`;
+   const fileName = `stats.json`;
    const filePath = path.join(directoryPath, fileName);
 
-   fs.writeFileSync(filePath, JSON.stringify(playerScore));
+   fs.writeFileSync(filePath, JSON.stringify({playerScore, individualStats: estadistiques}));
 
    res.send({
       valid: true,
