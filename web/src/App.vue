@@ -1,6 +1,6 @@
 <script setup>
 import { ref, reactive, onMounted, watch, computed } from 'vue'
-import { createQuestion, getQuestions, getQuestionById, getAnswers, editQuestion, deleteQuestion } from './communicationManager'
+import { createQuestion, getQuestions, getQuestionById, getAnswers, editQuestion, deleteQuestion, getStats } from './communicationManager'
 
 const preguntes = ref([]);
 const preguntaAEditar = ref(null);
@@ -9,6 +9,7 @@ const interactor = ref(null);
 const correctAnswerEditar = ref(null);
 const correctAnswerCrear = ref(null);
 const respostes = ref([]);
+const statsReceived = reactive({})
 const preguntaACrear = reactive({
   pregunta: '',
   respostes: [
@@ -16,7 +17,7 @@ const preguntaACrear = reactive({
     { id: 1, resposta: '', correcta: false },
     { id: 2, resposta: '', correcta: false },
     { id: 3, resposta: '', correcta: false }
-  ]  
+  ]
 })
 
 
@@ -45,10 +46,16 @@ const goToCreate = async () => {
   changePage("afegir")
 }
 
+const goToStats = async () => {
+  const stats = await getStats();
+  statsReceived.estadistiques = stats;
+  changePage("stats")
+}
+
 const modalBorrar = (id) => {
   if (confirm(`Segur que vols borrar la pregunta ${id}?`)) {
     deletePregunta(id);
-  } 
+  }
   // else {
   //   console.log("no borrem pregunta ", id);
   // }
@@ -133,8 +140,9 @@ onMounted(async () => {
   <div class="buttonContainer">
     <button class="buttonContainer__button button button__create" @click="goToCreate">Afegir pregunta</button>
     <button class="buttonContainer__button button button__preguntes" @click="goToPreguntes">Llistar preguntes</button>
+    <button class="buttonContainer__button button" @click="goToStats">Mostrar estadístiques</button>
   </div>
-  
+
   <div class="container__preguntes" v-if="page == 'preguntes'">
     <h1 class="title">Preguntes</h1>
     <div class="preguntes__pregunta pregunta__explicacio">
@@ -145,20 +153,20 @@ onMounted(async () => {
         Pregunta
       </div>
       <div class="pregunta__respostes">
-        <div  class="respostes__resposta respostes__resposta__correcte ">
+        <div class="respostes__resposta respostes__resposta__correcte ">
           Correcta
         </div>
-        <div  class="respostes__resposta  respostes__resposta__incorrecte">
+        <div class="respostes__resposta  respostes__resposta__incorrecte">
           Incorrecta
         </div>
-        <div  class="respostes__resposta  respostes__resposta__incorrecte">
+        <div class="respostes__resposta  respostes__resposta__incorrecte">
           Incorrecta
         </div>
-        <div  class="respostes__resposta  respostes__resposta__incorrecte">
+        <div class="respostes__resposta  respostes__resposta__incorrecte">
           Incorrecta
         </div>
       </div>
-  
+
       <div class="pregunta__opcions">
         <div class="opcions__editar">
           <button class="button button__editar">Editar</button>
@@ -215,23 +223,29 @@ onMounted(async () => {
     <div class="crear__container container">
       <textarea v-model="preguntaACrear.pregunta" rows="4" cols="50" placeholder="Escriu aquí la pregunta"></textarea>
       <div class="resposta__select" v-for="resposta in preguntaACrear.respostes" :key="resposta.id">
-      <select v-model="resposta.resposta">
-        <option disabled value="">Escull una resposta</option>
-        <option v-for="opcio in respostes" :key="opcio.id"
-          :value="opcio.resposta">
-          {{ opcio.resposta }}
-        </option>
-      </select>
-      <input type="radio" :value="resposta.id" :name="preguntaACrear.id" v-model="correctAnswerCrear">
-      
-    </div>
-    <div>
-      <button class="button" @click="crearPregunta()">Guardar</button>
-    </div>
-    </div>
-    
+        <select v-model="resposta.resposta">
+          <option disabled value="">Escull una resposta</option>
+          <option v-for="opcio in respostes" :key="opcio.id" :value="opcio.resposta">
+            {{ opcio.resposta }}
+          </option>
+        </select>
+        <input type="radio" :value="resposta.id" :name="preguntaACrear.id" v-model="correctAnswerCrear">
 
-    
+      </div>
+      <div>
+        <button class="button" @click="crearPregunta()">Guardar</button>
+      </div>
+    </div>
+
+
+
+  </div>
+  <div v-else-if="page == 'stats'">
+    <h1 class="title">Estadístiques</h1>
+
+    <div v-for="stat in statsReceived.estadistiques" :key="stat.id">
+      <p>Percentatge pregunta {{ stat.questionId }}: {{ stat.percentage }}%</p>
+    </div>
   </div>
 </template>
 
@@ -271,6 +285,7 @@ button {
 .button__create {
   background-color: #bafd87;
 }
+
 .button__preguntes {
   background-color: #79ffff;
 }
@@ -342,7 +357,7 @@ button {
   align-items: center;
 }
 
-.title{
+.title {
   text-align: center;
   font-size: 2em;
   margin: 20px;
@@ -354,9 +369,11 @@ textarea {
   font-family: Arial, sans-serif;
   font-size: 1.1em;
 }
-.resposta__select{
+
+.resposta__select {
   min-width: 350px;
 }
+
 .resposta__select select {
   appearance: none;
   width: 400px;

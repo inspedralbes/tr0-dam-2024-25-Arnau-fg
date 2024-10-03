@@ -67,3 +67,12 @@ export const deleteQuestion = async (id) => {
     const data = await response.json()
     return data;
 }
+
+// Estadístiques
+
+export const getStats = async () => {
+    const response = await fetch(`${link}/estadistiques`)
+    const data = await response.json()
+    // console.log(JSON.parse(data.response));
+    return JSON.parse(data.response);
+}

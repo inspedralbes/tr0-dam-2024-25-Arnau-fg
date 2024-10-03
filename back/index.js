@@ -1,6 +1,4 @@
 const express = require('express');
-// const textFile = require("./JSON/preguntes.json");
-// const file = JSON.parse(textFile);
 let file = require("./JSON/preguntes.json");
 const respostesFile = require("./JSON/respostes.json");
 const fs = require('fs');
@@ -8,6 +6,7 @@ const path = require('path');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const { v4: uuidv4 } = require('uuid');
+const { spawn, exec } = require('child_process');
 const app = express()
 const port = 3000
 let playerStates = [];
@@ -72,10 +71,10 @@ app.post('/finalitza', (req, res) => {
    let encertades = 0;
    const totals = playerStates[sessionToken].length;
 
-   let estadistiques = [];
+   let estadistiquesPartida = [];
 
    playerAnswers.forEach((answer, index) => {
-      
+
       let answered = {
          id: playerStates[sessionToken][index].id,
          acertat: false
@@ -90,7 +89,7 @@ app.post('/finalitza', (req, res) => {
          encertades++;
       }
 
-      estadistiques.push(answered);
+      estadistiquesPartida.push(answered);
    });
 
    let playerScore = {
@@ -98,7 +97,7 @@ app.post('/finalitza', (req, res) => {
       totals
    }
 
-   
+
 
    if (!fs.existsSync("answers")) {
       fs.mkdirSync("answers");
@@ -108,22 +107,82 @@ app.post('/finalitza', (req, res) => {
       fs.mkdirSync(directoryPath);
    }
 
-   if (fs.existsSync(directoryPath+"/stats.json")) {
-      console.log("hola");
-      const stats = fs.readFileSync(directoryPath+"/stats.json");
-      const statsParsed = JSON.parse(stats);
+   let statsParsed
 
+   if (fs.existsSync(directoryPath + "/stats.json")) {
+      console.log("hola");
+      const stats = fs.readFileSync(directoryPath + "/stats.json");
+      statsParsed = JSON.parse(stats);
+   } else {
+      statsParsed = { playerScore, individualStats: [] }
+
+      file.preguntes.forEach((pregunta) => {
+         crearPreguntaStats(pregunta.id, statsParsed);
+      })
    }
+
+   estadistiquesPartida.forEach((estadistica) => {
+      const index = statsParsed.individualStats.findIndex((pregunta) => {
+         return pregunta.id == estadistica.id;
+      });
+
+      if (index == -1) {
+         crearPreguntaStats(estadistica.id, statsParsed);
+
+         statsParsed.individualStats[statsParsed.individualStats.length - 1].nJugades++;
+
+         if (estadistica.acertat) {
+            statsParsed.individualStats[statsParsed.individualStats.length - 1].nEncertades++;
+         }
+      } else {
+         statsParsed.individualStats[index].nJugades++;
+
+         if (estadistica.acertat) {
+            statsParsed.individualStats[index].nEncertades++;
+         }
+      }
+
+
+   });
 
    const filesInDirectory = fs.readdirSync(directoryPath);
    const fileName = `stats.json`;
    const filePath = path.join(directoryPath, fileName);
 
-   fs.writeFileSync(filePath, JSON.stringify({playerScore, individualStats: estadistiques}));
+   fs.writeFileSync(filePath, JSON.stringify(statsParsed));
 
    res.send({
       valid: true,
       playerScore
+   });
+});
+
+
+
+// estadistiques
+
+app.get('/estadistiques', (req, res) => {
+   const ls = spawn("python", ["getWinrateStats.py"]);
+
+   let objToSend = {
+      correct: false,
+      response: ""
+   };
+
+   ls.stdout.on("data", (data) => {
+
+      objToSend.correct = true;
+      objToSend.response = data.toString();
+
+   });
+
+   ls.on('error', (error) => {
+      console.log(`Error: ${error.message}`);
+   });
+
+   ls.on("close", (code) => {
+      console.log(`Getting stats exited with code ${code}`);
+      res.send(JSON.stringify(objToSend));
    });
 });
 
@@ -189,7 +248,7 @@ app.get('/respostes', (req, res) => {
 app.put('/preguntes/:id', (req, res) => {
 
    let response = {};
-   
+
    let idToFind = req.params.id;
 
    let question = file.preguntes.find(pregunta => pregunta.id == idToFind);
@@ -215,7 +274,7 @@ app.put('/preguntes/:id', (req, res) => {
 
 // Delete
 app.delete('/preguntes/:id', (req, res) => {
-   
+
    let response = {};
 
    let idToFind = req.params.id;
@@ -295,6 +354,16 @@ function formatAnswers(answers) {
 
    return formattedAnswers;
 
+}
+
+function crearPreguntaStats(id, statsParsed) {
+   const stats = {
+      id,
+      nJugades: 0,
+      nEncertades: 0
+   }
+
+   statsParsed.individualStats.push(stats);
 }
 
 app.listen(port, () => {
