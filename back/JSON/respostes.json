@@ -1,0 +1,64 @@
+{
+    "respostes": [
+        {
+            "id": 0,
+            "resposta": "BMW",
+            "imatge": "https://exemple.com/bmw.jpg"
+        },
+        {
+            "id": 1,
+            "resposta": "Audi",
+            "imatge": "https://exemple.com/audi.jpg"
+        },
+        {
+            "id": 2,
+            "resposta": "Ferrari",
+            "imatge": "https://exemple.com/ferrari.jpg"
+        },
+        {
+            "id": 3,
+            "resposta": "Ford",
+            "imatge": "https://exemple.com/ford.jpg"
+        },
+        {
+            "id": 4,
+            "resposta": "Lamborghini",
+            "imatge": "https://exemple.com/lamborghini.jpg"
+        },
+        {
+            "id": 5,
+            "resposta": "Lexus",
+            "imatge": "https://exemple.com/lexus.jpg"
+        },
+        {
+            "id": 6,
+            "resposta": "Mazda",
+            "imatge": "https://exemple.com/mazda.jpg"
+        },
+        {
+            "id": 7,
+            "resposta": "Mercedes",
+            "imatge": "https://exemple.com/mercedes.jpg"
+        },
+        {
+            "id": 8,
+            "resposta": "Renault",
+            "imatge": "https://exemple.com/Renault.jpg"
+        },
+        {
+            "id": 9,
+            "resposta": "Subaru",
+            "imatge": "https://exemple.com/subaru.jpg"
+        },
+        {
+            "id": 10,
+            "resposta": "Tesla",
+            "imatge": "https://exemple.com/tesla.jpg"
+        },
+        {
+            "id": 11,
+            "resposta": "Volkswagen",
+            "imatge": "https://exemple.com/volkswagen.jpg"
+        }
+    ]
+}
