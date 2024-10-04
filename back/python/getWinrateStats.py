@@ -5,7 +5,7 @@ import datetime
 today = datetime.date.today().strftime("%Y-%m-%d")
 
 # Construct the file path
-file_path = "./answers/" + today + "/stats.json"
+file_path = "../answers/" + today + "/stats.json"
 
 # Read the JSON file
 with open(file_path, 'r') as file:

@@ -162,7 +162,7 @@ app.post('/finalitza', (req, res) => {
 // estadistiques
 
 app.get('/estadistiques', (req, res) => {
-   const ls = spawn("python", ["getWinrateStats.py"]);
+   const ls = spawn("docker", ["run", "-rm", "-i", "python:3.13.0rc3-slim-bookworm", "python3", "./getWinrateStats.py"]);
 
    let objToSend = {
       correct: false,
@@ -170,6 +170,8 @@ app.get('/estadistiques', (req, res) => {
    };
 
    ls.stdout.on("data", (data) => {
+
+      console.log(data.toString());
 
       objToSend.correct = true;
       objToSend.response = data.toString();
@@ -182,7 +184,8 @@ app.get('/estadistiques', (req, res) => {
 
    ls.on("close", (code) => {
       console.log(`Getting stats exited with code ${code}`);
-      res.send(JSON.stringify(objToSend));
+      // res.send(JSON.stringify(objToSend));
+      res.send("holiwiris")
    });
 });
 
@@ -366,6 +369,10 @@ function crearPreguntaStats(id, statsParsed) {
    statsParsed.individualStats.push(stats);
 }
 
+
+
+
 app.listen(port, () => {
+
    console.log(`Example app listening on port ${port}`)
 })
