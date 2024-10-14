@@ -17,7 +17,7 @@ app.use(cors());
 
 // inici joc
 
-app.post('/', (req, res) => {
+app.get('/start', (req, res) => {
    let gameQuestions = file.preguntes;
    let formattedGameQuestions = [];
    const numOfQuestions = req.body.numOfQuestions || 10;
@@ -34,23 +34,27 @@ app.post('/', (req, res) => {
 
    playerStates[sessionToken] = slicedGameQuestions;
 
-   // console.log(playerStates);
-
-   res.send({
+   let objToSend = {
       token: sessionToken,
       formattedGameQuestions
-   })
+   }
+
+   console.log(objToSend);
+
+   res.send(objToSend)
 });
 
 // respostes
 
-app.post('/finalitza', (req, res) => {
+app.post('/end', (req, res) => {
    const currentDate = new Date();
    const directoryName = currentDate.toISOString().split('T')[0];
    const directoryAnswers = path.join(__dirname, "answers");
    const directoryPath = path.join(directoryAnswers, directoryName);
 
    const sessionToken = req.body.token;
+
+   //Comprova si pot guardar
 
    if (!playerStates[sessionToken]) {
       res.send({
@@ -66,6 +70,8 @@ app.post('/finalitza', (req, res) => {
       return;
    }
 
+   //Comprova respostes certes
+
    const playerAnswers = req.body.answers;
 
    let encertades = 0;
@@ -77,6 +83,7 @@ app.post('/finalitza', (req, res) => {
 
       let answered = {
          id: playerStates[sessionToken][index].id,
+         answerId: answer,
          acertat: false
       }
 
@@ -92,12 +99,14 @@ app.post('/finalitza', (req, res) => {
       estadistiquesPartida.push(answered);
    });
 
+   //Objecte Winrate genèric
+
    let playerScore = {
       encertades,
       totals
    }
 
-
+   //Comprova si existeix tant la carpeta com el fitxer
 
    if (!fs.existsSync("answers")) {
       fs.mkdirSync("answers");
@@ -107,19 +116,30 @@ app.post('/finalitza', (req, res) => {
       fs.mkdirSync(directoryPath);
    }
 
+   //Si existeix agafa l'informació, sino la crea
+
    let statsParsed
 
    if (fs.existsSync(directoryPath + "/stats.json")) {
       console.log("hola");
       const stats = fs.readFileSync(directoryPath + "/stats.json");
       statsParsed = JSON.parse(stats);
+      statsParsed.playerScore = {
+         encertades: playerScore.encertades + statsParsed.playerScore.encertades,
+         totals: playerScore.totals + statsParsed.playerScore.totals
+      };
    } else {
-      statsParsed = { playerScore, individualStats: [] }
+      statsParsed = {
+         playerScore,
+         individualStats: []
+      }
 
       file.preguntes.forEach((pregunta) => {
          crearPreguntaStats(pregunta.id, statsParsed);
       })
    }
+
+   //Actualitza les estadístiques
 
    estadistiquesPartida.forEach((estadistica) => {
       const index = statsParsed.individualStats.findIndex((pregunta) => {
@@ -135,15 +155,21 @@ app.post('/finalitza', (req, res) => {
             statsParsed.individualStats[statsParsed.individualStats.length - 1].nEncertades++;
          }
       } else {
+         const answerIndex = statsParsed.individualStats[index].answers.findIndex((answer) => {
+            return answer.id == estadistica.answerId;
+          });
+
          statsParsed.individualStats[index].nJugades++;
+         console.log(statsParsed.individualStats[index].answers[answerIndex]);
+         statsParsed.individualStats[index].answers[answerIndex].count++;
 
          if (estadistica.acertat) {
             statsParsed.individualStats[index].nEncertades++;
          }
       }
-
-
    });
+
+   //Guarda les estadístiques
 
    const filesInDirectory = fs.readdirSync(directoryPath);
    const fileName = `stats.json`;
@@ -169,7 +195,9 @@ app.get('/estadistiques', (req, res) => {
       response: ""
    };
 
-   ls.stdout.on("data", (data) => {
+   ls.stdout.on("data", (data) => { 
+
+      console.log("si que responde");
 
       objToSend.correct = true;
       objToSend.response = data.toString();
@@ -235,8 +263,13 @@ app.get('/preguntes/:id', (req, res) => {
 });
 
 // Read All
-app.get('/preguntes', (req, res) => {
-   res.send(file.preguntes)
+app.get('/preguntes', (req, res) => {  
+   const directoryQuestions = path.join(__dirname, "JSON");
+
+   const fileRead = fs.readFileSync(directoryQuestions + "/preguntes.json");
+   const getParsed = JSON.parse(fileRead);
+
+   res.send(getParsed.preguntes)
 });
 
 // Read All Answers
@@ -357,13 +390,19 @@ function formatAnswers(answers) {
 }
 
 function crearPreguntaStats(id, statsParsed) {
-   const stats = {
+   const pregunta = file.preguntes.find(pregunta => pregunta.id == id);
+   const answers = pregunta.respostes.map(resposta => ({
+      id: resposta.id,
+      count: 0,
+      correct: resposta.correcta
+   }));
+
+   statsParsed.individualStats.push({
       id,
       nJugades: 0,
-      nEncertades: 0
-   }
-
-   statsParsed.individualStats.push(stats);
+      nEncertades: 0,
+      answers
+   });
 }
 
 app.listen(port, () => {
