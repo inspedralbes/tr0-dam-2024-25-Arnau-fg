@@ -1,10 +1,29 @@
-# Carpeta _/web_
+# front
 
-Aquesta carpeta ha de contenir l'aplicació, tot el que s'hagi de posar a la carpeta "public_html" del site.
-Típicament, els següents fitxers organitzats en les carpetes corresponents:
- -  html
- -  php
- -  png,jpg ...
- -  js
- -  css
- -  
+This template should help get you started developing with Vue 3 in Vite.
+
+## Recommended IDE Setup
+
+[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+
+## Customize configuration
+
+See [Vite Configuration Reference](https://vitejs.dev/config/).
+
+## Project Setup
+
+```sh
+npm install
+```
+
+### Compile and Hot-Reload for Development
+
+```sh
+npm run dev
+```
+
+### Compile and Minify for Production
+
+```sh
+npm run build
+```
